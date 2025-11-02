@@ -103,41 +103,41 @@ def load_data():
         num_workers=2
     )
     
-    print(f"훈련 데이터: {len(train_dataset)}개")
-    print(f"테스트 데이터: {len(test_dataset)}개")
+    print(f"Training samples: {len(train_dataset)}")
+    print(f"Test samples: {len(test_dataset)}")
     
     return train_loader, test_loader
 
 
 def visualize_samples(loader):
-    """데이터셋 샘플 시각화"""
-    # 배치 하나 가져오기
+    """Visualize dataset samples"""
+    # Get one batch
     dataiter = iter(loader)
     images, labels = next(dataiter)
     
-    # 이미지 정규화 해제
+    # Denormalize images
     images = images / 2 + 0.5
     
-    # 그리드로 시각화
+    # Visualize in grid
     fig, axes = plt.subplots(2, 5, figsize=(12, 5))
-    fig.suptitle('CIFAR-10 샘플 이미지', fontsize=16)
+    fig.suptitle('CIFAR-10 Sample Images', fontsize=16, fontweight='bold')
     
     for idx, ax in enumerate(axes.flat):
         if idx < len(images):
-            # CHW -> HWC 형태로 변환
+            # Convert CHW -> HWC
             img = images[idx].numpy().transpose((1, 2, 0))
             ax.imshow(img)
-            ax.set_title(CLASSES[labels[idx]])
+            ax.set_title(CLASSES[labels[idx]], fontsize=10)
             ax.axis('off')
     
     plt.tight_layout()
     plt.savefig('cifar10_samples.png', dpi=150, bbox_inches='tight')
-    print("샘플 이미지가 'cifar10_samples.png'로 저장되었습니다.")
+    print("Sample images saved as 'cifar10_samples.png'")
     plt.close()
 
 
 def train_one_epoch(model, train_loader, criterion, optimizer, epoch):
-    """1 에포크 학습"""
+    """Train for one epoch"""
     model.train()
     running_loss = 0.0
     correct = 0
@@ -145,26 +145,26 @@ def train_one_epoch(model, train_loader, criterion, optimizer, epoch):
     
     pbar = tqdm(train_loader, desc=f'Epoch {epoch+1}/{NUM_EPOCHS}')
     for images, labels in pbar:
-        # 데이터를 디바이스로 이동
+        # Move data to device
         images = images.to(DEVICE)
         labels = labels.to(DEVICE)
         
-        # 순전파
+        # Forward pass
         outputs = model(images)
         loss = criterion(outputs, labels)
         
-        # 역전파 및 최적화
+        # Backward and optimize
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         
-        # 통계
+        # Statistics
         running_loss += loss.item()
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
         
-        # 진행 상황 업데이트
+        # Update progress
         pbar.set_postfix({
             'loss': f'{running_loss/total:.4f}',
             'acc': f'{100*correct/total:.2f}%'
@@ -176,18 +176,18 @@ def train_one_epoch(model, train_loader, criterion, optimizer, epoch):
 
 
 def evaluate(model, test_loader, criterion):
-    """모델 평가"""
+    """Evaluate model"""
     model.eval()
     test_loss = 0.0
     correct = 0
     total = 0
     
-    # 클래스별 정확도 계산을 위한 변수
+    # Variables for per-class accuracy
     class_correct = [0] * 10
     class_total = [0] * 10
     
     with torch.no_grad():
-        for images, labels in tqdm(test_loader, desc='평가 중'):
+        for images, labels in tqdm(test_loader, desc='Evaluating'):
             images = images.to(DEVICE)
             labels = labels.to(DEVICE)
             
@@ -199,7 +199,7 @@ def evaluate(model, test_loader, criterion):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
             
-            # 클래스별 정확도 계산
+            # Calculate per-class accuracy
             c = (predicted == labels).squeeze()
             for i in range(len(labels)):
                 label = labels[i]
@@ -209,8 +209,8 @@ def evaluate(model, test_loader, criterion):
     test_loss = test_loss / len(test_loader)
     test_acc = 100 * correct / total
     
-    # 클래스별 정확도 출력
-    print("\n클래스별 정확도:")
+    # Print per-class accuracy
+    print("\nPer-class Accuracy:")
     for i in range(10):
         acc = 100 * class_correct[i] / class_total[i]
         print(f'  {CLASSES[i]:10s}: {acc:.2f}%')
@@ -219,65 +219,65 @@ def evaluate(model, test_loader, criterion):
 
 
 def plot_training_history(train_losses, train_accs, test_losses, test_accs):
-    """학습 과정 시각화"""
+    """Visualize training history"""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
     
     epochs = range(1, len(train_losses) + 1)
     
-    # 손실 그래프
-    ax1.plot(epochs, train_losses, 'b-', label='훈련 손실', linewidth=2)
-    ax1.plot(epochs, test_losses, 'r-', label='테스트 손실', linewidth=2)
-    ax1.set_xlabel('에포크', fontsize=12)
-    ax1.set_ylabel('손실', fontsize=12)
-    ax1.set_title('학습 과정: 손실', fontsize=14)
+    # Loss graph
+    ax1.plot(epochs, train_losses, 'b-', label='Train Loss', linewidth=2)
+    ax1.plot(epochs, test_losses, 'r-', label='Test Loss', linewidth=2)
+    ax1.set_xlabel('Epoch', fontsize=12)
+    ax1.set_ylabel('Loss', fontsize=12)
+    ax1.set_title('Training History: Loss', fontsize=14, fontweight='bold')
     ax1.legend()
     ax1.grid(True, alpha=0.3)
     
-    # 정확도 그래프
-    ax2.plot(epochs, train_accs, 'b-', label='훈련 정확도', linewidth=2)
-    ax2.plot(epochs, test_accs, 'r-', label='테스트 정확도', linewidth=2)
-    ax2.set_xlabel('에포크', fontsize=12)
-    ax2.set_ylabel('정확도 (%)', fontsize=12)
-    ax2.set_title('학습 과정: 정확도', fontsize=14)
+    # Accuracy graph
+    ax2.plot(epochs, train_accs, 'b-', label='Train Accuracy', linewidth=2)
+    ax2.plot(epochs, test_accs, 'r-', label='Test Accuracy', linewidth=2)
+    ax2.set_xlabel('Epoch', fontsize=12)
+    ax2.set_ylabel('Accuracy (%)', fontsize=12)
+    ax2.set_title('Training History: Accuracy', fontsize=14, fontweight='bold')
     ax2.legend()
     ax2.grid(True, alpha=0.3)
     
     plt.tight_layout()
     plt.savefig('training_history.png', dpi=150, bbox_inches='tight')
-    print("학습 과정 그래프가 'training_history.png'로 저장되었습니다.")
+    print("Training history plot saved as 'training_history.png'")
     plt.close()
 
 
 def main():
-    """메인 실행 함수"""
+    """Main execution function"""
     print("="*60)
-    print("CIFAR-10 MLP 분류 실습")
+    print("CIFAR-10 MLP Classification Practice")
     print("="*60)
-    print(f"사용 디바이스: {DEVICE}\n")
+    print(f"Device: {DEVICE}\n")
     
-    # 1. 데이터 로드
+    # 1. Load data
     train_loader, test_loader = load_data()
     
-    # 2. 샘플 이미지 시각화
+    # 2. Visualize sample images
     visualize_samples(train_loader)
     
-    # 3. 모델 생성
-    print("\n모델 생성 중...")
+    # 3. Create model
+    print("\nCreating model...")
     model = MLP().to(DEVICE)
     print(model)
     
-    # 모델 파라미터 수 출력
+    # Print model parameters
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"\n전체 파라미터 수: {total_params:,}")
-    print(f"학습 가능한 파라미터 수: {trainable_params:,}")
+    print(f"\nTotal parameters: {total_params:,}")
+    print(f"Trainable parameters: {trainable_params:,}")
     
-    # 4. 손실 함수 및 옵티마이저 설정
+    # 4. Setup loss function and optimizer
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     
-    # 5. 학습
-    print(f"\n학습 시작 (총 {NUM_EPOCHS} 에포크)")
+    # 5. Training
+    print(f"\nStarting training (Total {NUM_EPOCHS} epochs)")
     print("-"*60)
     
     train_losses = []
@@ -288,38 +288,38 @@ def main():
     best_acc = 0.0
     
     for epoch in range(NUM_EPOCHS):
-        # 학습
+        # Train
         train_loss, train_acc = train_one_epoch(
             model, train_loader, criterion, optimizer, epoch
         )
         train_losses.append(train_loss)
         train_accs.append(train_acc)
         
-        # 평가
+        # Evaluate
         test_loss, test_acc = evaluate(model, test_loader, criterion)
         test_losses.append(test_loss)
         test_accs.append(test_acc)
         
         print(f"\nEpoch {epoch+1}/{NUM_EPOCHS}")
-        print(f"  훈련 - 손실: {train_loss:.4f}, 정확도: {train_acc:.2f}%")
-        print(f"  테스트 - 손실: {test_loss:.4f}, 정확도: {test_acc:.2f}%")
+        print(f"  Train - Loss: {train_loss:.4f}, Acc: {train_acc:.2f}%")
+        print(f"  Test  - Loss: {test_loss:.4f}, Acc: {test_acc:.2f}%")
         
-        # 최고 성능 모델 저장
+        # Save best model
         if test_acc > best_acc:
             best_acc = test_acc
             torch.save(model.state_dict(), 'best_model.pth')
-            print(f"  ✓ 최고 성능 모델 저장됨 (정확도: {best_acc:.2f}%)")
+            print(f"  ✓ Best model saved (Accuracy: {best_acc:.2f}%)")
         
         print("-"*60)
     
-    # 6. 학습 과정 시각화
-    print("\n학습 과정 시각화 중...")
+    # 6. Visualize training history
+    print("\nGenerating training history plot...")
     plot_training_history(train_losses, train_accs, test_losses, test_accs)
     
-    # 7. 최종 결과
+    # 7. Final results
     print("\n" + "="*60)
-    print("학습 완료!")
-    print(f"최고 테스트 정확도: {best_acc:.2f}%")
+    print("Training Complete!")
+    print(f"Best test accuracy: {best_acc:.2f}%")
     print("="*60)
 
 
