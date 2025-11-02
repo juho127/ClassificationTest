@@ -27,13 +27,35 @@ pip install -r requirements.txt
 
 ### 방법 2: Python 스크립트
 ```bash
+# MLP 기본 실습
 python cifar10_mlp.py
+
+# 모델 비교 (MLP vs CNN vs ViT)
+python model_comparison.py
 ```
 
 ### 방법 3: Jupyter 노트북 (로컬)
 ```bash
+# MLP 기본 실습
 jupyter notebook cifar10_mlp_tutorial.ipynb
+
+# 모델 비교
+jupyter notebook model_comparison.ipynb
 ```
+
+## 📚 실습 자료
+
+### 1. MLP 기본 실습
+- `cifar10_mlp.py` - Python 스크립트
+- `cifar10_mlp_tutorial.ipynb` - Jupyter 노트북
+- MLP 기초 이해 및 PyTorch 사용법 학습
+
+### 2. 모델 비교 실습 ⭐ NEW!
+- `model_comparison.py` - Python 스크립트
+- `model_comparison.ipynb` - Jupyter 노트북 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/juho127/ClassificationTest/blob/main/model_comparison.ipynb)
+- **MLP vs CNN vs ViT** 세 가지 아키텍처 비교
+- 성능, 학습 시간, 파라미터 수 비교
+- 클래스별 정확도 분석
 
 ## 프로그램 구조
 
@@ -69,8 +91,14 @@ jupyter notebook cifar10_mlp_tutorial.ipynb
 
 ## 예상 성능
 
+### MLP 단독 실습
 - **테스트 정확도**: 약 50-55%
 - **참고**: MLP는 이미지의 공간적 구조를 활용하지 못하므로 CNN보다 성능이 낮습니다.
+
+### 모델 비교 실습 (model_comparison)
+- **MLP**: ~50-55% (빠른 학습, 단순)
+- **CNN**: ~70-75% (최고 성능, 공간 구조 활용)
+- **ViT**: ~65-70% (글로벌 어텐션, 더 많은 데이터 필요)
 
 ## 학습 내용
 
